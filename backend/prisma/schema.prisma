@@ -1,0 +1,189 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  PROVIDER
+  ADMIN
+}
+
+enum ServiceCategory {
+  MAID
+  COOK
+  ELECTRICIAN
+  PLUMBER
+  CLEANING
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// User model - for customers and providers
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  name          String
+  phone         String?
+  role          Role      @default(USER)
+  avatar        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  bookings      Booking[]
+  reviews       Review[]
+  provider      ServiceProvider?
+  
+  @@map("users")
+}
+
+// Service Provider model
+model ServiceProvider {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  specialization  String    // e.g., "Maid, Cooking"
+  hourlyRate      Float
+  experience      Int       // years
+  bio             String?
+  rating          Float     @default(0)
+  totalReviews    Int       @default(0)
+  isApproved      Boolean   @default(false)
+  isAvailable     Boolean   @default(true)
+  address         String?
+  city            String?
+  state           String?
+  pincode         String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings        Booking[]
+  reviews         Review[]
+  availability    Availability[]
+  
+  @@map("service_providers")
+}
+
+// Service model
+model Service {
+  id          String          @id @default(uuid())
+  name        String
+  description String
+  category    ServiceCategory
+  basePrice   Float          // base hourly price
+  imageUrl    String?
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  // Relations
+  bookings    Booking[]
+  
+  @@map("services")
+}
+
+// Booking model
+model Booking {
+  id              String        @id @default(uuid())
+  userId          String
+  providerId      String
+  serviceId       String
+  bookingDate     DateTime      // date of service
+  startTime       String        // e.g., "10:00"
+  hours           Int           // number of hours booked
+  totalPrice      Float
+  status          BookingStatus @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  address         String
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Relations
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider        ServiceProvider @relation(fields: [providerId], references: [id])
+  service         Service       @relation(fields: [serviceId], references: [id])
+  payment         Payment?
+  review          Review?
+  
+  @@map("bookings")
+}
+
+// Payment model
+model Payment {
+  id                  String        @id @default(uuid())
+  bookingId           String        @unique
+  razorpayOrderId     String        @unique
+  razorpayPaymentId   String?       @unique
+  razorpaySignature   String?
+  amount              Float
+  currency            String        @default("INR")
+  status              PaymentStatus @default(PENDING)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  
+  // Relations
+  booking             Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@map("payments")
+}
+
+// Review model
+model Review {
+  id          String    @id @default(uuid())
+  bookingId   String    @unique
+  userId      String
+  providerId  String
+  rating      Int       // 1-5
+  comment     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  booking     Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider    ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  
+  @@map("reviews")
+}
+
+// Availability model - provider working hours
+model Availability {
+  id          String    @id @default(uuid())
+  providerId  String
+  dayOfWeek   Int       // 0-6 (Sunday-Saturday)
+  startTime   String    // e.g., "09:00"
+  endTime     String    // e.g., "18:00"
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  provider    ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  
+  @@unique([providerId, dayOfWeek])
+  @@map("availability")
+}

@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+.next/
+dist/
+
+# Environment files
+.env
+.env.local
+.env*.local
+
+# IDE
+.vscode/
+.idea/
+
+# Build files
+*.log
+*.tsbuildinfo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+coverage/
+out/
