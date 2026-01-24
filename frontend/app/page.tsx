@@ -1,200 +1,296 @@
+'use client';
+
 import Link from 'next/link';
-import { ArrowRight, CheckCircle, Star, Sparkles, Zap } from 'lucide-react';
+import { ArrowRight, Shield, Clock, Star, Wrench, Sparkles, Zap, Users } from 'lucide-react';
+
+const services = [
+    {
+        id: 'maid',
+        name: 'House Maid',
+        description: 'Professional cleaning and household management',
+        price: 150,
+        image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop',
+        icon: Sparkles,
+        color: 'from-purple-500 to-pink-500',
+    },
+    {
+        id: 'cook',
+        name: 'Personal Cook',
+        description: 'Experienced chefs for delicious home-cooked meals',
+        price: 200,
+        image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&h=300&fit=crop',
+        icon: Zap,
+        color: 'from-orange-500 to-red-500',
+    },
+    {
+        id: 'electrician',
+        name: 'Electrician',
+        description: 'Licensed experts for all electrical needs',
+        price: 300,
+        image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&h=300&fit=crop',
+        icon: Zap,
+        color: 'from-yellow-500 to-orange-500',
+    },
+    {
+        id: 'plumber',
+        name: 'Plumber',
+        description: 'Quick fixes for pipes, leaks, and installations',
+        price: 250,
+        image: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=400&h=300&fit=crop',
+        icon: Wrench,
+        color: 'from-blue-500 to-cyan-500',
+    },
+    {
+        id: 'cleaning',
+        name: 'Deep Cleaning',
+        description: 'Thorough sanitization and deep cleaning services',
+        price: 400,
+        image: 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=400&h=300&fit=crop',
+        icon: Sparkles,
+        color: 'from-teal-500 to-green-500',
+    },
+    {
+        id: 'maintenance',
+        name: 'Home Maintenance',
+        description: 'General repairs and maintenance work',
+        price: 350,
+        image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&h=300&fit=crop',
+        icon: Wrench,
+        color: 'from-indigo-500 to-purple-500',
+    },
+];
+
+const features = [
+    {
+        icon: Shield,
+        title: 'Verified Professionals',
+        description: 'All service providers undergo thorough background verification',
+    },
+    {
+        icon: Clock,
+        title: 'On-Time Service',
+        description: 'Punctual professionals who value your time',
+    },
+    {
+        icon: Star,
+        title: 'Quality Guaranteed',
+        description: 'Satisfaction guaranteed or your money back',
+    },
+    {
+        icon: Users,
+        title: 'Trusted by Thousands',
+        description: 'Join 10,000+ happy customers across the city',
+    },
+];
 
 export default function HomePage() {
     return (
         <div className="min-h-screen">
             {/* Hero Section */}
-            <section className="relative py-20 px-4 overflow-hidden">
-                {/* Animated Background */}
-                <div className="absolute inset-0 -z-10">
-                    <div className="absolute top-20 left-10 w-72 h-72 bg-primary-500/30 rounded-full blur-3xl animate-pulse-slow"></div>
-                    <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary-500/30 rounded-full blur-3xl animate-pulse-slow"></div>
+            <section className="relative min-h-[90vh] flex items-center justify-center hero-bg bg-grid-pattern overflow-hidden">
+                {/* Animated Background Elements */}
+                <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl animate-float"></div>
+                    <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float delay-200"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-3xl"></div>
                 </div>
 
-                <div className="container mx-auto max-w-6xl">
-                    <div className="text-center animate-fadeIn">
-                        <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 mb-6">
-                            <Sparkles className="w-4 h-4 text-yellow-400" />
-                            <span className="text-sm">Trusted by 10,000+ Happy Customers</span>
+                <div className="container mx-auto px-4 relative z-10">
+                    <div className="text-center max-w-4xl mx-auto">
+                        <div className="animate-fadeIn">
+                            <span className="inline-block px-4 py-2 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-indigo-300 text-sm font-medium mb-6">
+                                Trusted by 10,000+ Customers
+                            </span>
                         </div>
 
                         <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-slideUp">
-                            Book <span className="gradient-text">Premium</span>
+                            Premium <span className="gradient-text">Home Services</span>
                             <br />
-                            Home Services
+                            <span className="text-4xl md:text-5xl text-slate-300">At Your Doorstep</span>
                         </h1>
 
-                        <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto animate-slideUp">
-                            Professional maid, cooking, electrician, plumbing, and cleaning services
-                            at your doorstep. Book by the hour, pay securely.
+                        <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto animate-slideUp delay-100">
+                            Book trusted professionals for all your home service needs.
+                            From cleaning to repairs, we have got you covered with quality and reliability.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slideUp">
-                            <Link href="/services" className="btn-primary text-lg group">
-                                Explore Services
-                                <ArrowRight className="inline ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slideUp delay-200">
+                            <Link href="/services" className="btn-primary flex items-center justify-center gap-2">
+                                Browse Services
+                                <ArrowRight className="w-5 h-5" />
                             </Link>
-                            <Link href="/register" className="btn-outline text-lg">
-                                Become a Provider
+                            <Link href="/register" className="btn-outline flex items-center justify-center gap-2">
+                                Get Started Free
                             </Link>
                         </div>
+
+                        {/* Stats */}
+                        <div className="grid grid-cols-3 gap-8 mt-16 animate-fadeIn delay-300">
+                            <div className="text-center">
+                                <p className="text-4xl font-bold gradient-text">10K+</p>
+                                <p className="text-slate-400 text-sm mt-1">Happy Customers</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-4xl font-bold gradient-text-cyan">500+</p>
+                                <p className="text-slate-400 text-sm mt-1">Verified Experts</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-4xl font-bold gradient-text">4.9</p>
+                                <p className="text-slate-400 text-sm mt-1">Average Rating</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Scroll Indicator */}
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+                    <div className="w-6 h-10 border-2 border-slate-500 rounded-full flex justify-center pt-2">
+                        <div className="w-1 h-3 bg-indigo-400 rounded-full animate-pulse"></div>
                     </div>
                 </div>
             </section>
 
             {/* Features Section */}
-            <section className="py-16 px-4">
-                <div className="container mx-auto max-w-6xl">
-                    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 gradient-text">
-                        Why Choose Us?
-                    </h2>
-
-                    <div className="grid md:grid-cols-3 gap-8">
-                        <div className="card-premium text-center group hover:scale-105 transition-transform duration-300">
-                            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <CheckCircle className="w-8 h-8 text-white" />
-                            </div>
-                            <h3 className="text-xl font-semibold mb-3">Verified Professionals</h3>
-                            <p className="text-gray-400">
-                                All service providers are background-verified and highly rated by customers
-                            </p>
-                        </div>
-
-                        <div className="card-premium text-center group hover:scale-105 transition-transform duration-300">
-                            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Zap className="w-8 h-8 text-white" />
-                            </div>
-                            <h3 className="text-xl font-semibold mb-3">Instant Booking</h3>
-                            <p className="text-gray-400">
-                                Book services in minutes with flexible hourly rates and instant confirmation
-                            </p>
-                        </div>
-
-                        <div className="card-premium text-center group hover:scale-105 transition-transform duration-300">
-                            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Star className="w-8 h-8 text-white" />
-                            </div>
-                            <h3 className="text-xl font-semibold mb-3">Quality Guaranteed</h3>
-                            <p className="text-gray-400">
-                                Rated 4.8/5 by customers. 100% satisfaction or your money back
-                            </p>
-                        </div>
+            <section className="py-24 relative">
+                <div className="container mx-auto px-4">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl font-bold mb-4">
+                            Why Choose <span className="gradient-text">Us</span>
+                        </h2>
+                        <p className="text-slate-400 max-w-2xl mx-auto">
+                            We provide the best home services with guaranteed quality and professionalism
+                        </p>
                     </div>
-                </div>
-            </section>
 
-            {/* Services Grid */}
-            <section className="py-16 px-4 bg-gradient-to-b from-transparent to-black/30">
-                <div className="container mx-auto max-w-6xl">
-                    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-                        Our <span className="gradient-text">Services</span>
-                    </h2>
-
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {services.map((service, index) => (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {features.map((feature, index) => (
                             <div
-                                key={index}
-                                className="card group cursor-pointer hover:shadow-2xl hover:shadow-primary-500/20"
+                                key={feature.title}
+                                className="card text-center group animate-slideUp"
                                 style={{ animationDelay: `${index * 100}ms` }}
                             >
-                                <div className="w-full h-48 bg-gradient-to-br from-primary-500/20 to-secondary-500/20 rounded-lg mb-4 flex items-center justify-center">
-                                    <service.icon className="w-16 h-16 text-primary-400 group-hover:scale-110 transition-transform" />
+                                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                    <feature.icon className="w-8 h-8 text-indigo-400" />
                                 </div>
-                                <h3 className="text-xl font-semibold mb-2">{service.name}</h3>
-                                <p className="text-gray-400 mb-4">{service.description}</p>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-primary-400 font-bold">₹{service.price}/hr</span>
-                                    <Link href="/services" className="text-sm text-secondary-400 hover:text-secondary-300">
-                                        Book Now →
-                                    </Link>
-                                </div>
+                                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                                <p className="text-slate-400 text-sm">{feature.description}</p>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* CTA Section */}
-            <section className="py-20 px-4">
-                <div className="container mx-auto max-w-4xl">
-                    <div className="card-premium text-center">
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                            Ready to Get Started?
+            {/* Services Section */}
+            <section className="py-24 relative bg-slate-900/50">
+                <div className="container mx-auto px-4">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl font-bold mb-4">
+                            Our <span className="gradient-text">Services</span>
                         </h2>
-                        <p className="text-xl text-gray-300 mb-8">
-                            Join thousands of satisfied customers who trust us for their home services
+                        <p className="text-slate-400 max-w-2xl mx-auto">
+                            Professional services tailored to meet all your home needs
                         </p>
-                        <Link href="/register" className="btn-primary text-lg">
-                            Create Account - It's Free
+                    </div>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {services.map((service, index) => (
+                            <Link
+                                key={service.id}
+                                href={`/services/${service.id}`}
+                                className="service-card group animate-slideUp"
+                                style={{ animationDelay: `${index * 100}ms` }}
+                            >
+                                {/* Image */}
+                                <div className="relative h-48 overflow-hidden">
+                                    <img
+                                        src={service.image}
+                                        alt={service.name}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+
+                                    {/* Price Badge */}
+                                    <div className="absolute top-4 right-4 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
+                                        <span className="text-white font-semibold">From Rs.{service.price}/hr</span>
+                                    </div>
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-6">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-r ${service.color} flex items-center justify-center`}>
+                                            <service.icon className="w-5 h-5 text-white" />
+                                        </div>
+                                        <h3 className="text-xl font-semibold group-hover:text-indigo-400 transition-colors">
+                                            {service.name}
+                                        </h3>
+                                    </div>
+                                    <p className="text-slate-400 text-sm mb-4">{service.description}</p>
+
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-1 text-yellow-400">
+                                            <Star className="w-4 h-4 fill-current" />
+                                            <span className="text-sm">4.8</span>
+                                            <span className="text-slate-500 text-sm">(120+)</span>
+                                        </div>
+                                        <span className="text-indigo-400 text-sm font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
+                                            Book Now <ArrowRight className="w-4 h-4" />
+                                        </span>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+
+                    <div className="text-center mt-12">
+                        <Link href="/services" className="btn-primary inline-flex items-center gap-2">
+                            View All Services
+                            <ArrowRight className="w-5 h-5" />
                         </Link>
                     </div>
                 </div>
             </section>
+
+            {/* CTA Section */}
+            <section className="py-24 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20"></div>
+                <div className="container mx-auto px-4 relative z-10">
+                    <div className="card-premium max-w-4xl mx-auto text-center glow-indigo">
+                        <h2 className="text-4xl font-bold mb-4">
+                            Ready to Get Started?
+                        </h2>
+                        <p className="text-slate-300 text-lg mb-8 max-w-2xl mx-auto">
+                            Join thousands of satisfied customers who trust us for their home service needs.
+                            Book your first service today!
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <Link href="/register" className="btn-primary">
+                                Create Free Account
+                            </Link>
+                            <Link href="/services" className="btn-outline">
+                                Browse Services
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Footer */}
+            <footer className="py-12 border-t border-slate-800">
+                <div className="container mx-auto px-4">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div className="text-2xl font-bold gradient-text">HomeServices</div>
+                        <p className="text-slate-500 text-sm">
+                            2024 Home Services. All rights reserved.
+                        </p>
+                        <div className="flex gap-6 text-slate-400 text-sm">
+                            <a href="#" className="hover:text-white transition-colors">Privacy</a>
+                            <a href="#" className="hover:text-white transition-colors">Terms</a>
+                            <a href="#" className="hover:text-white transition-colors">Contact</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 }
-
-// Service data
-const services = [
-    {
-        name: 'Maid Service',
-        description: 'Professional house cleaning and maintenance',
-        price: 150,
-        icon: ({ className }: { className: string }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-        ),
-    },
-    {
-        name: 'Cooking Service',
-        description: 'Experienced cooks for daily meals',
-        price: 200,
-        icon: ({ className }: { className: string }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-        ),
-    },
-    {
-        name: 'Electrician',
-        description: 'Licensed electricians for repairs & installations',
-        price: 300,
-        icon: ({ className }: { className: string }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-        ),
-    },
-    {
-        name: 'Plumbing',
-        description: 'Expert plumbers for all plumbing needs',
-        price: 250,
-        icon: ({ className }: { className: string }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-            </svg>
-        ),
-    },
-    {
-        name: 'Deep Cleaning',
-        description: 'Comprehensive cleaning for homes & offices',
-        price: 400,
-        icon: ({ className }: { className: string }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-            </svg>
-        ),
-    },
-    {
-        name: 'General Services',
-        description: 'Other household maintenance services',
-        price: 180,
-        icon: ({ className }: { className: string }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
-        ),
-    },
-];

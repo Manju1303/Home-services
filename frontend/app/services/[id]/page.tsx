@@ -1,242 +1,221 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import api from '@/lib/api';
+import { useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
-import { ArrowLeft, Clock, Star, Calendar, MapPin, User, CheckCircle } from 'lucide-react';
+import { Star, Clock, MapPin, Calendar, User, CheckCircle, ArrowLeft, Shield, Award } from 'lucide-react';
+import Link from 'next/link';
 
-interface Service {
-    id: string;
-    name: string;
-    description: string;
-    category: string;
-    basePrice: number;
-}
-
-interface Provider {
-    id: string;
-    specialization: string;
-    hourlyRate: number;
-    rating: number;
-    totalReviews: number;
-    experience: number;
-    user: {
-        name: string;
-        phone: string;
-    };
-}
-
-const categoryIcons: Record<string, string> = {
-    MAID: '🏠',
-    COOK: '👨‍🍳',
-    ELECTRICIAN: '⚡',
-    PLUMBER: '🔧',
-    CLEANING: '✨',
+const servicesData: Record<string, any> = {
+    maid: {
+        id: 'maid',
+        name: 'House Maid',
+        description: 'Professional cleaning and household management services. Our trained maids ensure your home stays spotless with eco-friendly cleaning products.',
+        price: 150,
+        image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=400&fit=crop',
+        rating: 4.8,
+        reviews: 245,
+        features: ['Daily cleaning', 'Laundry', 'Utensil cleaning', 'Dusting', 'Mopping'],
+    },
+    cook: {
+        id: 'cook',
+        name: 'Personal Cook',
+        description: 'Experienced chefs for delicious home-cooked meals. From daily meals to special occasions, our cooks bring restaurant-quality food to your table.',
+        price: 200,
+        image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&h=400&fit=crop',
+        rating: 4.9,
+        reviews: 189,
+        features: ['Breakfast', 'Lunch', 'Dinner', 'Special diets', 'Party catering'],
+    },
+    electrician: {
+        id: 'electrician',
+        name: 'Electrician',
+        description: 'Licensed experts for all electrical needs. From wiring to appliance repairs, our certified electricians handle it all with safety and precision.',
+        price: 300,
+        image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&h=400&fit=crop',
+        rating: 4.7,
+        reviews: 312,
+        features: ['Wiring', 'Fan installation', 'Light fixtures', 'Repairs', 'Safety inspection'],
+    },
+    plumber: {
+        id: 'plumber',
+        name: 'Plumber',
+        description: 'Quick fixes for pipes, leaks, and installations. Our plumbers provide fast, reliable service for all your plumbing emergencies and installations.',
+        price: 250,
+        image: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&h=400&fit=crop',
+        rating: 4.6,
+        reviews: 198,
+        features: ['Leak repair', 'Pipe fitting', 'Drain cleaning', 'Toilet repair', 'Water heater'],
+    },
+    cleaning: {
+        id: 'cleaning',
+        name: 'Deep Cleaning',
+        description: 'Thorough sanitization and deep cleaning services. Perfect for move-in/move-out or periodic deep cleaning of your entire home.',
+        price: 400,
+        image: 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=800&h=400&fit=crop',
+        rating: 4.9,
+        reviews: 156,
+        features: ['Full home cleaning', 'Sanitization', 'Carpet cleaning', 'Kitchen deep clean', 'Bathroom deep clean'],
+    },
+    maintenance: {
+        id: 'maintenance',
+        name: 'Home Maintenance',
+        description: 'General repairs and maintenance work. Our handyman services cover a wide range of home improvement and repair needs.',
+        price: 350,
+        image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=400&fit=crop',
+        rating: 4.8,
+        reviews: 267,
+        features: ['Furniture assembly', 'Door repairs', 'Wall mounting', 'Minor repairs', 'Painting touch-ups'],
+    },
 };
 
-export default function ServiceDetailPage({ params }: { params: { id: string } }) {
+const providers = [
+    { id: '1', name: 'Rajesh Kumar', rating: 4.9, jobs: 234, experience: 5, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
+    { id: '2', name: 'Priya Sharma', rating: 4.8, jobs: 189, experience: 4, image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
+    { id: '3', name: 'Amit Singh', rating: 4.7, jobs: 156, experience: 3, image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
+];
+
+export default function ServiceDetailPage() {
+    const params = useParams();
     const router = useRouter();
     const { isAuthenticated } = useAuthStore();
-    const [service, setService] = useState<Service | null>(null);
-    const [providers, setProviders] = useState<Provider[]>([]);
-    const [loading, setLoading] = useState(true);
     const [selectedProvider, setSelectedProvider] = useState<string>('');
-    const [bookingData, setBookingData] = useState({
-        date: '',
-        time: '10:00',
-        hours: 2,
-        address: '',
-        notes: '',
-    });
-    const [submitting, setSubmitting] = useState(false);
-    const [success, setSuccess] = useState(false);
+    const [bookingDate, setBookingDate] = useState('');
+    const [bookingTime, setBookingTime] = useState('');
+    const [hours, setHours] = useState(2);
+    const [address, setAddress] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        fetchServiceDetails();
-        fetchProviders();
-    }, [params.id]);
+    const service = servicesData[params.id as string];
 
-    const fetchServiceDetails = async () => {
-        try {
-            const response = await api.get(`/services/${params.id}`);
-            setService(response.data.service);
-        } catch (error) {
-            console.error('Failed to fetch service:', error);
-            // Mock data for demo
-            setService({
-                id: params.id,
-                name: 'Home Service',
-                description: 'Professional home service on hourly basis',
-                category: 'MAID',
-                basePrice: 200,
-            });
-        }
-    };
-
-    const fetchProviders = async () => {
-        try {
-            const response = await api.get('/providers');
-            setProviders(response.data.providers);
-        } catch (error) {
-            console.error('Failed to fetch providers:', error);
-            // Mock providers
-            setProviders([
-                {
-                    id: 'provider-1',
-                    specialization: 'All Services',
-                    hourlyRate: 200,
-                    rating: 4.8,
-                    totalReviews: 42,
-                    experience: 5,
-                    user: { name: 'Priya Sharma', phone: '+91 9876543211' },
-                },
-                {
-                    id: 'provider-2',
-                    specialization: 'Electrician, Plumbing',
-                    hourlyRate: 300,
-                    rating: 4.5,
-                    totalReviews: 24,
-                    experience: 8,
-                    user: { name: 'Rajesh Kumar', phone: '+91 9876543210' },
-                },
-            ]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const calculateTotal = () => {
-        const provider = providers.find(p => p.id === selectedProvider);
-        const rate = provider?.hourlyRate || service?.basePrice || 200;
-        return rate * bookingData.hours;
-    };
-
-    const handleBooking = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!isAuthenticated) {
-            router.push('/login');
-            return;
-        }
-
-        if (!selectedProvider) {
-            alert('Please select a provider');
-            return;
-        }
-
-        setSubmitting(true);
-
-        try {
-            await api.post('/bookings', {
-                serviceId: params.id,
-                providerId: selectedProvider,
-                bookingDate: bookingData.date,
-                startTime: bookingData.time,
-                hours: bookingData.hours,
-                address: bookingData.address,
-                notes: bookingData.notes,
-            });
-            setSuccess(true);
-            setTimeout(() => {
-                router.push('/dashboard');
-            }, 2000);
-        } catch (error: any) {
-            console.error('Booking failed:', error);
-            alert(error.response?.data?.error || 'Booking failed. Please try again.');
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    if (loading) {
+    if (!service) {
         return (
-            <div className="min-h-screen flex justify-center items-center">
-                <div className="spinner w-12 h-12"></div>
-            </div>
-        );
-    }
-
-    if (success) {
-        return (
-            <div className="min-h-screen flex justify-center items-center">
-                <div className="card-premium text-center animate-fadeIn">
-                    <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold mb-2">Booking Successful!</h2>
-                    <p className="text-gray-400">Redirecting to dashboard...</p>
+            <div className="min-h-screen pt-20 flex items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold mb-4">Service not found</h2>
+                    <Link href="/services" className="btn-primary">
+                        Browse Services
+                    </Link>
                 </div>
             </div>
         );
     }
 
-    return (
-        <div className="min-h-screen py-12 px-4">
-            <div className="container mx-auto max-w-6xl">
-                {/* Back Button */}
-                <Link href="/services" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition-colors">
-                    <ArrowLeft className="w-5 h-5" />
-                    Back to Services
-                </Link>
+    const totalPrice = service.price * hours;
 
+    const handleBooking = async () => {
+        if (!isAuthenticated) {
+            router.push('/login');
+            return;
+        }
+
+        if (!selectedProvider || !bookingDate || !bookingTime || !address) {
+            alert('Please fill all required fields');
+            return;
+        }
+
+        setLoading(true);
+        // Simulate API call
+        setTimeout(() => {
+            setLoading(false);
+            alert('Booking confirmed! Check your dashboard for details.');
+            router.push('/dashboard');
+        }, 1500);
+    };
+
+    return (
+        <div className="min-h-screen pt-20">
+            {/* Hero Image */}
+            <div className="relative h-[40vh] md:h-[50vh]">
+                <img
+                    src={service.image}
+                    alt={service.name}
+                    className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent"></div>
+
+                {/* Back Button */}
+                <Link
+                    href="/services"
+                    className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 text-white hover:bg-white/20 transition-all"
+                >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back
+                </Link>
+            </div>
+
+            <div className="container mx-auto px-4 -mt-32 relative z-10">
                 <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Service Details */}
+                    {/* Service Info */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Service Header */}
                         <div className="card-premium animate-fadeIn">
-                            <div className="flex items-start gap-4">
-                                <div className="w-20 h-20 bg-gradient-to-br from-primary-500/30 to-secondary-500/30 rounded-xl flex items-center justify-center text-4xl">
-                                    {categoryIcons[service?.category || 'MAID']}
-                                </div>
-                                <div className="flex-1">
-                                    <h1 className="text-3xl font-bold mb-2">{service?.name}</h1>
-                                    <p className="text-gray-400 mb-4">{service?.description}</p>
-                                    <div className="flex items-center gap-4">
-                                        <span className="flex items-center gap-2 text-primary-400">
-                                            <Clock className="w-5 h-5" />
-                                            <span className="font-bold">₹{service?.basePrice}/hr</span>
-                                        </span>
-                                        <span className="flex items-center gap-1 text-yellow-400">
+                            <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+                                <div>
+                                    <h1 className="text-3xl md:text-4xl font-bold mb-2">{service.name}</h1>
+                                    <div className="flex items-center gap-4 text-slate-400">
+                                        <div className="flex items-center gap-1 text-yellow-400">
                                             <Star className="w-5 h-5 fill-current" />
-                                            <span>4.8 (100+ reviews)</span>
-                                        </span>
+                                            <span className="font-semibold">{service.rating}</span>
+                                        </div>
+                                        <span>({service.reviews} reviews)</span>
                                     </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-3xl font-bold gradient-text">Rs.{service.price}</p>
+                                    <p className="text-slate-400 text-sm">per hour</p>
+                                </div>
+                            </div>
+
+                            <p className="text-slate-300 text-lg leading-relaxed mb-8">
+                                {service.description}
+                            </p>
+
+                            {/* Features */}
+                            <div>
+                                <h3 className="text-lg font-semibold mb-4">Services Included</h3>
+                                <div className="grid sm:grid-cols-2 gap-3">
+                                    {service.features.map((feature: string) => (
+                                        <div key={feature} className="flex items-center gap-3 bg-slate-800/50 rounded-lg px-4 py-3">
+                                            <CheckCircle className="w-5 h-5 text-green-400" />
+                                            <span>{feature}</span>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Select Provider */}
-                        <div className="card animate-slideUp">
-                            <h2 className="text-xl font-semibold mb-4">Select a Provider</h2>
+                        {/* Providers */}
+                        <div className="card-premium animate-fadeIn delay-100">
+                            <h3 className="text-xl font-semibold mb-6">Select Service Provider</h3>
                             <div className="space-y-4">
                                 {providers.map((provider) => (
                                     <div
                                         key={provider.id}
                                         onClick={() => setSelectedProvider(provider.id)}
-                                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedProvider === provider.id
-                                                ? 'border-primary-500 bg-primary-500/10'
-                                                : 'border-white/20 hover:border-white/40'
+                                        className={`flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all duration-300 ${selectedProvider === provider.id
+                                                ? 'bg-indigo-500/20 border-2 border-indigo-500'
+                                                : 'bg-slate-800/50 border-2 border-transparent hover:border-slate-600'
                                             }`}
                                     >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
-                                                    <User className="w-6 h-6 text-white" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-semibold">{provider.user.name}</h3>
-                                                    <p className="text-sm text-gray-400">{provider.specialization}</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-primary-400 font-bold">₹{provider.hourlyRate}/hr</p>
-                                                <div className="flex items-center gap-1 text-yellow-400 text-sm">
-                                                    <Star className="w-3 h-3 fill-current" />
-                                                    <span>{provider.rating} ({provider.totalReviews})</span>
-                                                </div>
+                                        <img
+                                            src={provider.image}
+                                            alt={provider.name}
+                                            className="w-16 h-16 rounded-full object-cover"
+                                        />
+                                        <div className="flex-1">
+                                            <h4 className="font-semibold text-lg">{provider.name}</h4>
+                                            <div className="flex items-center gap-4 text-sm text-slate-400">
+                                                <span className="flex items-center gap-1">
+                                                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                                                    {provider.rating}
+                                                </span>
+                                                <span>{provider.jobs} jobs</span>
+                                                <span>{provider.experience} yrs exp</span>
                                             </div>
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-2">{provider.experience} years experience</p>
+                                        {selectedProvider === provider.id && (
+                                            <CheckCircle className="w-6 h-6 text-indigo-400" />
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -246,134 +225,109 @@ export default function ServiceDetailPage({ params }: { params: { id: string } }
                     {/* Booking Form */}
                     <div className="lg:col-span-1">
                         <div className="card-premium sticky top-24 animate-slideUp">
-                            <h2 className="text-xl font-semibold mb-6">Book This Service</h2>
+                            <h3 className="text-xl font-semibold mb-6">Book This Service</h3>
 
-                            <form onSubmit={handleBooking} className="space-y-4">
-                                {/* Date */}
+                            <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">
-                                        <Calendar className="w-4 h-4 inline mr-2" />
-                                        Date
-                                    </label>
+                                    <label className="block text-sm text-slate-400 mb-2">Date</label>
                                     <input
                                         type="date"
-                                        required
-                                        className="input-field"
+                                        value={bookingDate}
+                                        onChange={(e) => setBookingDate(e.target.value)}
                                         min={new Date().toISOString().split('T')[0]}
-                                        value={bookingData.date}
-                                        onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })}
+                                        className="input-field"
                                     />
                                 </div>
 
-                                {/* Time */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">
-                                        <Clock className="w-4 h-4 inline mr-2" />
-                                        Start Time
-                                    </label>
+                                    <label className="block text-sm text-slate-400 mb-2">Time</label>
                                     <select
+                                        value={bookingTime}
+                                        onChange={(e) => setBookingTime(e.target.value)}
                                         className="input-field"
-                                        value={bookingData.time}
-                                        onChange={(e) => setBookingData({ ...bookingData, time: e.target.value })}
                                     >
-                                        {Array.from({ length: 12 }, (_, i) => i + 8).map((hour) => (
-                                            <option key={hour} value={`${hour}:00`}>
-                                                {hour}:00 {hour < 12 ? 'AM' : 'PM'}
-                                            </option>
+                                        <option value="">Select time</option>
+                                        <option value="08:00">08:00 AM</option>
+                                        <option value="09:00">09:00 AM</option>
+                                        <option value="10:00">10:00 AM</option>
+                                        <option value="11:00">11:00 AM</option>
+                                        <option value="12:00">12:00 PM</option>
+                                        <option value="14:00">02:00 PM</option>
+                                        <option value="16:00">04:00 PM</option>
+                                        <option value="18:00">06:00 PM</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm text-slate-400 mb-2">Duration (hours)</label>
+                                    <select
+                                        value={hours}
+                                        onChange={(e) => setHours(Number(e.target.value))}
+                                        className="input-field"
+                                    >
+                                        {[1, 2, 3, 4, 5, 6, 7, 8].map((h) => (
+                                            <option key={h} value={h}>{h} hour{h > 1 ? 's' : ''}</option>
                                         ))}
                                     </select>
                                 </div>
 
-                                {/* Hours */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">Hours Required</label>
-                                    <div className="flex items-center gap-4">
-                                        <button
-                                            type="button"
-                                            onClick={() => setBookingData({ ...bookingData, hours: Math.max(1, bookingData.hours - 1) })}
-                                            className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center"
-                                        >
-                                            -
-                                        </button>
-                                        <span className="text-2xl font-bold w-12 text-center">{bookingData.hours}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => setBookingData({ ...bookingData, hours: Math.min(12, bookingData.hours + 1) })}
-                                            className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center"
-                                        >
-                                            +
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Address */}
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">
-                                        <MapPin className="w-4 h-4 inline mr-2" />
-                                        Service Address
-                                    </label>
+                                    <label className="block text-sm text-slate-400 mb-2">Service Address</label>
                                     <textarea
-                                        required
-                                        rows={2}
-                                        className="input-field resize-none"
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
                                         placeholder="Enter your complete address"
-                                        value={bookingData.address}
-                                        onChange={(e) => setBookingData({ ...bookingData, address: e.target.value })}
-                                    />
-                                </div>
-
-                                {/* Notes */}
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Special Instructions</label>
-                                    <textarea
-                                        rows={2}
+                                        rows={3}
                                         className="input-field resize-none"
-                                        placeholder="Any special requirements?"
-                                        value={bookingData.notes}
-                                        onChange={(e) => setBookingData({ ...bookingData, notes: e.target.value })}
                                     />
                                 </div>
 
                                 {/* Price Summary */}
-                                <div className="border-t border-white/10 pt-4 mt-4">
-                                    <div className="flex justify-between items-center text-lg">
-                                        <span>Total Amount:</span>
-                                        <span className="text-2xl font-bold text-primary-400">₹{calculateTotal()}</span>
+                                <div className="border-t border-slate-700 pt-4 mt-6">
+                                    <div className="flex justify-between text-slate-400 mb-2">
+                                        <span>Rs.{service.price} x {hours} hrs</span>
+                                        <span>Rs.{totalPrice}</span>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        {bookingData.hours} hours × ₹{calculateTotal() / bookingData.hours}/hr
-                                    </p>
+                                    <div className="flex justify-between text-lg font-semibold">
+                                        <span>Total</span>
+                                        <span className="gradient-text">Rs.{totalPrice}</span>
+                                    </div>
                                 </div>
 
-                                {/* Submit */}
                                 <button
-                                    type="submit"
-                                    disabled={submitting || !selectedProvider}
-                                    className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={handleBooking}
+                                    disabled={loading}
+                                    className="btn-primary w-full flex items-center justify-center gap-2"
                                 >
-                                    {submitting ? (
+                                    {loading ? (
                                         <>
-                                            <div className="spinner w-5 h-5 mr-2 inline-block"></div>
-                                            Booking...
+                                            <div className="spinner w-5 h-5"></div>
+                                            Processing...
                                         </>
-                                    ) : isAuthenticated ? (
-                                        'Confirm Booking'
                                     ) : (
-                                        'Login to Book'
+                                        <>Confirm Booking</>
                                     )}
                                 </button>
 
-                                {!isAuthenticated && (
-                                    <p className="text-xs text-center text-gray-400">
-                                        <Link href="/login" className="text-primary-400 hover:underline">Login</Link> or{' '}
-                                        <Link href="/register" className="text-primary-400 hover:underline">Register</Link> to book
-                                    </p>
-                                )}
-                            </form>
+                                {/* Trust Badges */}
+                                <div className="flex items-center justify-center gap-6 pt-4 text-slate-500 text-sm">
+                                    <div className="flex items-center gap-1">
+                                        <Shield className="w-4 h-4" />
+                                        <span>Secure</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <Award className="w-4 h-4" />
+                                        <span>Verified</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Spacer */}
+            <div className="h-24"></div>
         </div>
     );
 }

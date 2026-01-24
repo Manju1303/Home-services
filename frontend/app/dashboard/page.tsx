@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
-import { Calendar, Clock, MapPin, User, CheckCircle, XCircle, Star, CreditCard } from 'lucide-react';
+import api from '@/lib/api';
+import { Calendar, Clock, MapPin, CheckCircle, XCircle, AlertCircle, ArrowRight, Star } from 'lucide-react';
 
 interface Booking {
     id: string;
@@ -14,26 +14,23 @@ interface Booking {
     hours: number;
     totalPrice: number;
     status: string;
-    paymentStatus: string;
     address: string;
     service: {
         name: string;
-        category: string;
     };
-    provider: {
+    provider?: {
         user: {
             name: string;
-            phone: string;
         };
     };
 }
 
-const statusColors: Record<string, string> = {
-    PENDING: 'bg-yellow-500/20 text-yellow-400',
-    CONFIRMED: 'bg-blue-500/20 text-blue-400',
-    IN_PROGRESS: 'bg-purple-500/20 text-purple-400',
-    COMPLETED: 'bg-green-500/20 text-green-400',
-    CANCELLED: 'bg-red-500/20 text-red-400',
+const statusConfig: Record<string, { color: string; icon: any; label: string }> = {
+    PENDING: { color: 'text-yellow-400 bg-yellow-400/10', icon: AlertCircle, label: 'Pending' },
+    CONFIRMED: { color: 'text-blue-400 bg-blue-400/10', icon: CheckCircle, label: 'Confirmed' },
+    IN_PROGRESS: { color: 'text-purple-400 bg-purple-400/10', icon: Clock, label: 'In Progress' },
+    COMPLETED: { color: 'text-green-400 bg-green-400/10', icon: CheckCircle, label: 'Completed' },
+    CANCELLED: { color: 'text-red-400 bg-red-400/10', icon: XCircle, label: 'Cancelled' },
 };
 
 export default function DashboardPage() {
@@ -41,6 +38,7 @@ export default function DashboardPage() {
     const { user, isAuthenticated } = useAuthStore();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState('all');
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -57,124 +55,203 @@ export default function DashboardPage() {
         } catch (error) {
             console.error('Failed to fetch bookings:', error);
             // Mock data for demo
-            setBookings([]);
+            setBookings([
+                {
+                    id: '1',
+                    bookingDate: '2024-01-25',
+                    startTime: '10:00',
+                    hours: 3,
+                    totalPrice: 900,
+                    status: 'CONFIRMED',
+                    address: '123 Main Street, Bangalore',
+                    service: { name: 'Deep Cleaning' },
+                    provider: { user: { name: 'Priya Sharma' } },
+                },
+                {
+                    id: '2',
+                    bookingDate: '2024-01-20',
+                    startTime: '14:00',
+                    hours: 2,
+                    totalPrice: 500,
+                    status: 'COMPLETED',
+                    address: '456 Park Avenue, Mumbai',
+                    service: { name: 'Plumber' },
+                    provider: { user: { name: 'Rajesh Kumar' } },
+                },
+            ]);
         } finally {
             setLoading(false);
         }
     };
 
-    if (!isAuthenticated) {
+    const filteredBookings = bookings.filter((booking) => {
+        if (filter === 'all') return true;
+        return booking.status.toLowerCase() === filter;
+    });
+
+    const stats = {
+        total: bookings.length,
+        completed: bookings.filter((b) => b.status === 'COMPLETED').length,
+        pending: bookings.filter((b) => b.status === 'PENDING' || b.status === 'CONFIRMED').length,
+        totalSpent: bookings.filter((b) => b.status === 'COMPLETED').reduce((sum, b) => sum + b.totalPrice, 0),
+    };
+
+    if (loading) {
         return (
-            <div className="min-h-screen flex justify-center items-center">
+            <div className="min-h-screen pt-20 flex items-center justify-center">
                 <div className="spinner w-12 h-12"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen py-12 px-4">
-            <div className="container mx-auto max-w-6xl">
+        <div className="min-h-screen pt-20 pb-12">
+            <div className="container mx-auto px-4">
                 {/* Header */}
                 <div className="mb-8 animate-fadeIn">
-                    <h1 className="text-3xl font-bold mb-2">
-                        Welcome, <span className="gradient-text">{user?.name}</span>
+                    <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                        Welcome back, <span className="gradient-text">{user?.name}</span>
                     </h1>
-                    <p className="text-gray-400">Manage your bookings and profile</p>
+                    <p className="text-slate-400">Here is an overview of your bookings</p>
                 </div>
 
-                {/* Quick Actions */}
-                <div className="grid sm:grid-cols-3 gap-4 mb-8">
-                    <Link href="/services" className="card hover:border-primary-500/50 transition-all group">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-primary-500/20 rounded-lg flex items-center justify-center group-hover:bg-primary-500/30 transition-colors">
-                                <Calendar className="w-6 h-6 text-primary-400" />
-                            </div>
+                {/* Stats Cards */}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div className="card animate-slideUp">
+                        <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="font-semibold">Book Service</h3>
-                                <p className="text-sm text-gray-400">Schedule new service</p>
+                                <p className="text-slate-400 text-sm">Total Bookings</p>
+                                <p className="text-3xl font-bold">{stats.total}</p>
+                            </div>
+                            <div className="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center">
+                                <Calendar className="w-6 h-6 text-indigo-400" />
                             </div>
                         </div>
-                    </Link>
+                    </div>
 
-                    <div className="card">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+                    <div className="card animate-slideUp delay-100">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-slate-400 text-sm">Completed</p>
+                                <p className="text-3xl font-bold text-green-400">{stats.completed}</p>
+                            </div>
+                            <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
                                 <CheckCircle className="w-6 h-6 text-green-400" />
                             </div>
+                        </div>
+                    </div>
+
+                    <div className="card animate-slideUp delay-200">
+                        <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="font-semibold">{bookings.filter(b => b.status === 'COMPLETED').length}</h3>
-                                <p className="text-sm text-gray-400">Completed</p>
+                                <p className="text-slate-400 text-sm">Active</p>
+                                <p className="text-3xl font-bold text-yellow-400">{stats.pending}</p>
+                            </div>
+                            <div className="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center">
+                                <Clock className="w-6 h-6 text-yellow-400" />
                             </div>
                         </div>
                     </div>
 
-                    <div className="card">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                                <Clock className="w-6 h-6 text-yellow-400" />
-                            </div>
+                    <div className="card animate-slideUp delay-300">
+                        <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="font-semibold">{bookings.filter(b => b.status === 'PENDING' || b.status === 'CONFIRMED').length}</h3>
-                                <p className="text-sm text-gray-400">Upcoming</p>
+                                <p className="text-slate-400 text-sm">Total Spent</p>
+                                <p className="text-3xl font-bold gradient-text">Rs.{stats.totalSpent}</p>
+                            </div>
+                            <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                                <Star className="w-6 h-6 text-purple-400" />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Bookings List */}
-                <div className="card-premium">
-                    <h2 className="text-xl font-semibold mb-6">Your Bookings</h2>
+                {/* Bookings Section */}
+                <div className="card-premium animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                        <h2 className="text-xl font-semibold">Your Bookings</h2>
 
-                    {loading ? (
-                        <div className="flex justify-center py-12">
-                            <div className="spinner w-8 h-8"></div>
+                        {/* Filter Tabs */}
+                        <div className="flex gap-2">
+                            {['all', 'pending', 'confirmed', 'completed'].map((status) => (
+                                <button
+                                    key={status}
+                                    onClick={() => setFilter(status)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${filter === status
+                                            ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
+                                            : 'text-slate-400 hover:bg-white/5'
+                                        }`}
+                                >
+                                    {status}
+                                </button>
+                            ))}
                         </div>
-                    ) : bookings.length === 0 ? (
-                        <div className="text-center py-12">
-                            <Calendar className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                            <h3 className="text-xl font-semibold mb-2">No bookings yet</h3>
-                            <p className="text-gray-400 mb-6">Start by booking your first service</p>
-                            <Link href="/services" className="btn-primary">
+                    </div>
+
+                    {/* Bookings List */}
+                    {filteredBookings.length === 0 ? (
+                        <div className="text-center py-16">
+                            <div className="w-20 h-20 mx-auto mb-6 bg-slate-800/50 rounded-full flex items-center justify-center">
+                                <Calendar className="w-10 h-10 text-slate-600" />
+                            </div>
+                            <h3 className="text-xl font-semibold mb-2">No bookings found</h3>
+                            <p className="text-slate-400 mb-6">Start by booking your first service</p>
+                            <Link href="/services" className="btn-primary inline-flex items-center gap-2">
                                 Browse Services
+                                <ArrowRight className="w-5 h-5" />
                             </Link>
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {bookings.map((booking) => (
-                                <div key={booking.id} className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                        <div className="flex items-start gap-4">
-                                            <div className="w-12 h-12 bg-primary-500/20 rounded-lg flex items-center justify-center">
-                                                <Calendar className="w-6 h-6 text-primary-400" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-semibold">{booking.service.name}</h3>
-                                                <div className="flex flex-wrap gap-3 text-sm text-gray-400 mt-1">
+                            {filteredBookings.map((booking) => {
+                                const status = statusConfig[booking.status] || statusConfig.PENDING;
+                                const StatusIcon = status.icon;
+
+                                return (
+                                    <div
+                                        key={booking.id}
+                                        className="bg-slate-800/30 rounded-xl p-5 hover:bg-slate-800/50 transition-all duration-300"
+                                    >
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <h3 className="text-lg font-semibold">{booking.service.name}</h3>
+                                                    <span className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
+                                                        <StatusIcon className="w-3 h-3" />
+                                                        {status.label}
+                                                    </span>
+                                                </div>
+                                                <div className="flex flex-wrap gap-4 text-sm text-slate-400">
                                                     <span className="flex items-center gap-1">
                                                         <Calendar className="w-4 h-4" />
-                                                        {new Date(booking.bookingDate).toLocaleDateString()}
+                                                        {new Date(booking.bookingDate).toLocaleDateString('en-IN', {
+                                                            day: 'numeric',
+                                                            month: 'short',
+                                                            year: 'numeric',
+                                                        })}
                                                     </span>
                                                     <span className="flex items-center gap-1">
                                                         <Clock className="w-4 h-4" />
-                                                        {booking.startTime} ({booking.hours}hrs)
+                                                        {booking.startTime} ({booking.hours} hrs)
                                                     </span>
                                                     <span className="flex items-center gap-1">
-                                                        <User className="w-4 h-4" />
-                                                        {booking.provider.user.name}
+                                                        <MapPin className="w-4 h-4" />
+                                                        {booking.address}
                                                     </span>
                                                 </div>
+                                                {booking.provider && (
+                                                    <p className="text-sm text-slate-500 mt-2">
+                                                        Provider: {booking.provider.user.name}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-2xl font-bold gradient-text">Rs.{booking.totalPrice}</p>
                                             </div>
                                         </div>
-
-                                        <div className="flex items-center gap-4">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[booking.status]}`}>
-                                                {booking.status}
-                                            </span>
-                                            <span className="text-primary-400 font-bold">₹{booking.totalPrice}</span>
-                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
