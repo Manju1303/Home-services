@@ -1,11 +1,11 @@
 # Render Blueprint - Deploy All Services at Once
-# https://render.com/docs/blueprint-spec
 
 services:
   # Backend API Service
   - type: web
     name: home-services-api
     runtime: node
+    plan: free
     rootDir: backend
     buildCommand: npm install && npx prisma generate
     startCommand: npm run build && npm start
@@ -25,20 +25,13 @@ services:
   - type: web
     name: home-services-frontend
     runtime: static
+    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: out
-    headers:
-      - path: /*
-        name: Cache-Control
-        value: public, max-age=0, must-revalidate
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: home-services-api
-          property: host
-          envVarKey: API_URL
+        value: https://home-services-api.onrender.com/api
 
 # Free PostgreSQL Database
 databases:
