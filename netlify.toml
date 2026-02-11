@@ -6,7 +6,8 @@
 # Backend API as Netlify Function
 [functions]
   directory = "backend/dist"
-  node_bundler = "nft"
+  node_bundler = "esbuild"
+  included_files = ["backend/node_modules/.prisma/**", "backend/node_modules/@prisma/**"]
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -19,8 +20,10 @@
   from = "/api/*"
   to = "/.netlify/functions/netlify-function/api/:splat"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/health"
   to = "/.netlify/functions/netlify-function/health"
   status = 200
+  force = true
