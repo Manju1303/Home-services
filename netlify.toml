@@ -1,0 +1,26 @@
+[build]
+  # Build command: build both backend function and frontend
+  command = "cd backend && npm install && npx prisma generate && npx tsc && cd ../frontend && npm install && npm run build"
+  publish = "frontend/.next"
+
+# Backend API as Netlify Function
+[functions]
+  directory = "backend/dist"
+  node_bundler = "nft"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# Redirect all /api/* requests to the serverless function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/netlify-function/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/health"
+  to = "/.netlify/functions/netlify-function/health"
+  status = 200

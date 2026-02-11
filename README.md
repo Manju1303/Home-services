@@ -270,3 +270,5 @@ For issues or questions:
 ---
 
 **Built with ❤️ for Final Year Project**
+cd "d:\Home services"
+start-local.bat

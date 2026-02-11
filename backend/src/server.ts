@@ -39,7 +39,7 @@ import providerRoutes from './routes/provider.routes';
 import reviewRoutes from './routes/review.routes';
 import adminRoutes from './routes/admin.routes';
 
-// Mount routes
+// Mount routes - use /.netlify/functions/api prefix for Netlify Functions
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/services', serviceRoutes);
@@ -63,15 +63,20 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     });
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`🚀 Server is running on http://localhost:${PORT}`);
-    console.log(`📝 API documentation: http://localhost:${PORT}/health`);
-});
+// Export app for serverless use (Netlify Functions)
+export default app;
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-    console.log('\n🛑 Shutting down gracefully...');
-    await prisma.$disconnect();
-    process.exit(0);
-});
+// Start server only in non-serverless environments (local dev)
+if (!process.env.NETLIFY) {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server is running on http://localhost:${PORT}`);
+        console.log(`📝 API documentation: http://localhost:${PORT}/health`);
+    });
+
+    // Graceful shutdown
+    process.on('SIGINT', async () => {
+        console.log('\n🛑 Shutting down gracefully...');
+        await prisma.$disconnect();
+        process.exit(0);
+    });
+}
